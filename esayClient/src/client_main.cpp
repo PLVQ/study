@@ -3,9 +3,11 @@
 #include <iostream>
 #include <Windows.h>
 #include <WinSock2.h>
+
+#include "message.h"
+
 using namespace std;
 
-// #pragma comment(lib, "ws2_32.lib")
 int main()
 {
 	// 启动socket
@@ -37,23 +39,38 @@ int main()
 	while (true)
 	{
 		// 3.输入命令
-		char cmdBuf[128] = {};
-		cin >> cmdBuf;
-		if (0 == strcmp(cmdBuf, "exit"))
+		int cmd;
+		cin >> cmd;
+		login data = {"pengjiang", "123456"};
+		dataHeader head;
+		head.cmd = cmd;
+		head.dataLen = sizeof(data);
+		switch (cmd)
 		{
-			cout << "exit" << endl;
+		case LOG_IN:
+			send(_sock, (char*)&head, sizeof(head), 0);
+			send(_sock, (char*)&data, sizeof(data), 0);
+			break;
+		default:
 			break;
 		}
-		else
-		{
-			// 发生命令
-			send(_sock, cmdBuf, strlen(cmdBuf) + 1, 0);
-		}
+		// char cmdBuf[128] = {};
+		// cin >> cmdBuf;
+		// if (0 == strcmp(cmdBuf, "exit"))
+		// {
+		// 	cout << "exit" << endl;
+		// 	break;
+		// }
+		// else
+		// {
+		// 	// 发生命令
+		// 	send(_sock, cmdBuf, strlen(cmdBuf) + 1, 0);
+		// }
 		// 3.接收server data
-		char recvBuff[128] = {};
-		int nLen = recv(_sock, recvBuff, 256, 0);
+		response rsp;
+		int nLen = recv(_sock, (char*)&rsp, sizeof(rsp), 0);
 		if (nLen > 0) {
-			cout << recvBuff << endl;
+			cout << rsp.ret << endl;
 		}
 	}
 	// 4.关闭socket

@@ -8,8 +8,11 @@ project(easyServer)
 #比如:aux_source_directory(${CMAKE_SOURCE_DIR} DIR)  将${CMAKE_SOURCE_DIR}目录下，也就是最顶级目录下所有的.cpp文件放入DIR变量中，后面的add_executable就可以很简化
 #    add_executable(hello_world ${DIR})
 #aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCE_DIR)
- 
-add_executable(server ${PROJECT_SOURCE_DIR}/src/main.cpp)
+include_directories(
+        ${PROJECT_SOURCE_DIR}/include
+)  
+
+add_executable(server ${PROJECT_SOURCE_DIR}/src/server_main.cpp)
  
 target_link_libraries(server 
         WS2_32
