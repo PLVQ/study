@@ -59,44 +59,29 @@ int main()
 			cout << "client close" << endl;
 			break;
 		}
-		cout << "cmd:" << head.cmd << endl;
-		login data;
-		response rsp = {0};
 		switch (head.cmd)
 		{
 		case LOG_IN:
-			nLen = recv(_cSock, (char*)&data, sizeof(data), 0);
-			if (nLen <= 0){
-				cout << "client close" << endl;
-				break;
+			{
+				login data;
+				nLen = recv(_cSock, (char*)&data + sizeof(head), sizeof(data) - sizeof(head), 0);
+				if (nLen <= 0){
+					cout << "client close" << endl;
+					break;
+				}
+				cout << "cmd:" << data.cmd << endl;
+				cout << "len:" << data.dataLen << endl;
+				cout << "user_name:" << data.user_name << endl;
+				cout << "passwd:" << data.passwd << endl;
+				response rsp;
+				send(_cSock, (char*)&rsp, sizeof(rsp), 0);
 			}
-			cout << "user_name:" << data.user_name << endl;
-			cout << "passwd:" << data.passwd << endl;
-			send(_cSock, (char*)&rsp, sizeof(rsp), 0);
 			break;
 		case LOG_OUT:
 			break;
 		default:
 			break;
 		}
-		// 6.´¦ÀíÇëÇó
-		// if (0 == strcmp(_recvBuf, "getName"))
-		// {
-		// 	char msgBuff[] = "pengjiang.";
-		// 	send(_cSock, msgBuff, strlen(msgBuff) + 1, 0);
-		// }
-		// else if (0 == strcmp(_recvBuf, "getAge"))
-		// {
-		// 	char msgBuff[] = "80.";
-		// 	send(_cSock, msgBuff, strlen(msgBuff) + 1, 0);
-		// }
-		// else
-		// {
-		// 	char msgBuff[] = "hello, i'm server.";
-		// 	send(_cSock, msgBuff, strlen(msgBuff) + 1, 0);
-		// }
-		// 6.send
-		// send(_cSock, msgBuff, strlen(msgBuff) + 1, 0);
 	}
 
 	// 6.close socket

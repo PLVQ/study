@@ -1,7 +1,7 @@
 
 cmake_minimum_required(VERSION 3.9)
 project(esayClient)
- 
+set(CMAKE_BUILD_TYPE "Debug") 
 #设定源码列表.cpp
 # set(SOURCE_FILES ./main.cpp)
 #设定所有源码列表 ：aux_source_directory(<dir> <variable>)

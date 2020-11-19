@@ -41,36 +41,25 @@ int main()
 		// 3.输入命令
 		int cmd;
 		cin >> cmd;
-		login data = {"pengjiang", "123456"};
-		dataHeader head;
-		head.cmd = cmd;
-		head.dataLen = sizeof(data);
 		switch (cmd)
 		{
 		case LOG_IN:
-			send(_sock, (char*)&head, sizeof(head), 0);
-			send(_sock, (char*)&data, sizeof(data), 0);
+			{
+				login data;
+				strcpy(data.user_name, "pengjiang");
+				strcpy(data.passwd, "123456");
+				send(_sock, (char*)&data, sizeof(data), 0);
+			}
 			break;
 		default:
 			break;
 		}
-		// char cmdBuf[128] = {};
-		// cin >> cmdBuf;
-		// if (0 == strcmp(cmdBuf, "exit"))
-		// {
-		// 	cout << "exit" << endl;
-		// 	break;
-		// }
-		// else
-		// {
-		// 	// 发生命令
-		// 	send(_sock, cmdBuf, strlen(cmdBuf) + 1, 0);
-		// }
-		// 3.接收server data
 		response rsp;
 		int nLen = recv(_sock, (char*)&rsp, sizeof(rsp), 0);
 		if (nLen > 0) {
-			cout << rsp.ret << endl;
+			cout << "cmd:" << rsp.cmd << endl;
+			cout << "dataLen:" << rsp.dataLen << endl;
+			cout << "ret:" << rsp.ret << endl;
 		}
 	}
 	// 4.关闭socket
