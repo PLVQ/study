@@ -10,7 +10,7 @@ set(CMAKE_BUILD_TYPE "Debug")
 #aux_source_directory(${PROJECT_SOURCE_DIR}/src SOURCE_DIR)
 include_directories(
         ${PROJECT_SOURCE_DIR}/include
-)  
+)   
 
 add_executable(server ${PROJECT_SOURCE_DIR}/src/server_main.cpp)
  
