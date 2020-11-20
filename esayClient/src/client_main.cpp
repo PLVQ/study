@@ -1,7 +1,5 @@
 #include "client_message.h"
 
-using namespace std;
-
 int main()
 {
 	// 启动socket
@@ -12,10 +10,10 @@ int main()
 	// 1.建立socket
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, 0);
 	if (INVALID_SOCKET == _sock) {
-		cout << "socket error!" << endl;
+		std::cout << "socket error!" << std::endl;
 	}
 	else {
-		cout << "socket success!" << endl;
+		std::cout << "socket success!" << std::endl;
 	}
 
 	// 2.connect server
@@ -25,16 +23,16 @@ int main()
 	_sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
 	int ret = connect(_sock, (sockaddr*)&_sin, sizeof(_sin));
 	if (INVALID_SOCKET == ret) {
-		cout << "connect error!" << endl;
+		std::cout << "connect error!" << std::endl;
 	}
 	else {
-		cout << "connect success!" << endl;
+		std::cout << "connect success!" << std::endl;
 	}
 	while (true)
 	{
 		// 3.输入命令
 		int cmd;
-		cin >> cmd;
+		std::cin >> cmd;
 		switch (cmd)
 		{
 		case LOG_IN:
@@ -51,9 +49,9 @@ int main()
 		// response rsp;
 		// int nLen = recv(_sock, (char*)&rsp, sizeof(rsp), 0);
 		// if (nLen > 0) {
-		// 	cout << "cmd:" << rsp.cmd << endl;
-		// 	cout << "dataLen:" << rsp.dataLen << endl;
-		// 	cout << "ret:" << rsp.ret << endl;
+		// 	std::cout << "cmd:" << rsp.cmd << std::endl;
+		// 	std::cout << "dataLen:" << rsp.dataLen << std::endl;
+		// 	std::cout << "ret:" << rsp.ret << std::endl;
 		// }
 	}
 	// 4.关闭socket
