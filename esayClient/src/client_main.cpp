@@ -1,10 +1,4 @@
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
-#include <iostream>
-#include <Windows.h>
-#include <WinSock2.h>
-
-#include "message.h"
+#include "client_message.h"
 
 using namespace std;
 
@@ -54,13 +48,13 @@ int main()
 		default:
 			break;
 		}
-		response rsp;
-		int nLen = recv(_sock, (char*)&rsp, sizeof(rsp), 0);
-		if (nLen > 0) {
-			cout << "cmd:" << rsp.cmd << endl;
-			cout << "dataLen:" << rsp.dataLen << endl;
-			cout << "ret:" << rsp.ret << endl;
-		}
+		// response rsp;
+		// int nLen = recv(_sock, (char*)&rsp, sizeof(rsp), 0);
+		// if (nLen > 0) {
+		// 	cout << "cmd:" << rsp.cmd << endl;
+		// 	cout << "dataLen:" << rsp.dataLen << endl;
+		// 	cout << "ret:" << rsp.ret << endl;
+		// }
 	}
 	// 4.¹Ø±Õsocket
 	closesocket(_sock);
