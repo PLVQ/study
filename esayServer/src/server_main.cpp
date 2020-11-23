@@ -49,11 +49,19 @@ int main()
 		{
 			FD_SET(g_clients[i], &fdRead);
 		}
-
-		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExp, nullptr);
+		timeval tTime = {0, 0};
+		// tTime->tv_sec = 0;
+		// tTime->tv_usec = 0;
+		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExp, &tTime);
 		if (ret < 0)
 		{
 			std::cout << "select exit!" << std::endl;
+			break;
+		}
+
+		for(int i = g_clients.size() - 1; i >= 0; --i)
+		{
+			send_client(g_clients[i]);
 		}
 
 		if (FD_ISSET(_sock, &fdRead))
@@ -77,7 +85,7 @@ int main()
 		{
 			if (FD_ISSET(g_clients[i], &fdRead))
 			{
-				if (-1 == client_request(g_clients[i]))
+				if (-1 == recv_client(g_clients[i]))
 				{
 					auto iter = std::find(g_clients.begin(), g_clients.end(), g_clients[i]);
 
@@ -99,7 +107,7 @@ int main()
 	return 0;
 }
 
-int client_request(SOCKET c_sock)
+int recv_client(SOCKET c_sock)
 {
 	// 5.接收客户端的请求数据
 	dataHeader head;
@@ -133,4 +141,14 @@ int client_request(SOCKET c_sock)
 	default:
 		break;
 	}
+	return 0;
+}
+
+int send_client(SOCKET c_sock)
+{
+	response rsp;
+	rsp.text = "hello client";
+	send(c_sock, (char*)&rsp, sizeof(rsp), 0);
+	Sleep(1000);
+	return 0;
 }

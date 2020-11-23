@@ -2,6 +2,8 @@
 #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 #include <vector>
+#include <algorithm>
+#include <string>
 #include <Windows.h>
 #include <WinSock2.h>
 
@@ -37,6 +39,8 @@ public:
         ret = 0;
     }
     int ret;
+    std::string text;
 };
 
-int client_request()
+int recv_client(SOCKET c_sock);
+int send_client(SOCKET c_sock);
