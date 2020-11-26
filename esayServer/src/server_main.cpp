@@ -47,11 +47,10 @@ int main()
 
 		for(int i = g_clients.size() - 1; i >= 0; --i)
 		{
+			// std::cout << g_clients[i] << std::endl;
 			FD_SET(g_clients[i], &fdRead);
 		}
 		timeval tTime = {0, 0};
-		// tTime->tv_sec = 0;
-		// tTime->tv_usec = 0;
 		int ret = select(_sock + 1, &fdRead, &fdWrite, &fdExp, &tTime);
 		if (ret < 0)
 		{
@@ -59,10 +58,10 @@ int main()
 			break;
 		}
 
-		for(int i = g_clients.size() - 1; i >= 0; --i)
-		{
-			send_client(g_clients[i]);
-		}
+		// for(int i = g_clients.size() - 1; i >= 0; --i)
+		// {
+		// 	send_client(g_clients[i]);
+		// }
 
 		if (FD_ISSET(_sock, &fdRead))
 		{
@@ -133,6 +132,7 @@ int recv_client(SOCKET c_sock)
 		std::cout << "user_name:" << data.user_name << std::endl;
 		std::cout << "passwd:" << data.passwd << std::endl;
 		response rsp;
+		strcpy(rsp.text, "login success!");
 		send(c_sock, (char *)&rsp, sizeof(rsp), 0);
 	}
 	break;
@@ -147,7 +147,7 @@ int recv_client(SOCKET c_sock)
 int send_client(SOCKET c_sock)
 {
 	response rsp;
-	rsp.text = "hello client";
+	// strcpy(rsp.text, "hello client");
 	send(c_sock, (char*)&rsp, sizeof(rsp), 0);
 	Sleep(1000);
 	return 0;

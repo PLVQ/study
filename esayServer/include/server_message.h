@@ -29,7 +29,7 @@ public:
     char passwd[32];
 };
 
-class response : public dataHeader
+struct response : public dataHeader
 {
 public:
     response()
@@ -39,7 +39,7 @@ public:
         ret = 0;
     }
     int ret;
-    std::string text;
+    char text[128];
 };
 
 int recv_client(SOCKET c_sock);

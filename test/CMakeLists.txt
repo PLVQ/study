@@ -1,5 +1,6 @@
-cmake_minimum_required(VERSION 2.8)
-project(easyServer)
+
+cmake_minimum_required(VERSION 3.9)
+project(test)
 set(CMAKE_BUILD_TYPE "Debug") 
 #设定源码列表.cpp
 # set(SOURCE_FILES ./main.cpp)
@@ -11,12 +12,9 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include
 )   
 
-add_executable(server ${PROJECT_SOURCE_DIR}/src/server_main.cpp)
+add_executable(test ${PROJECT_SOURCE_DIR}/src/test_main.cpp)
  
-if (WIN32)
-        target_link_libraries(server 
-                WS2_32
-                WSock32
-        )
-else (UNIX)
-endif ()
+target_link_libraries(test 
+        WS2_32
+        WSock32
+)

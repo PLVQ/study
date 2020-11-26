@@ -2,10 +2,12 @@
 
 int main()
 {
-	// 启动socket
+	// windows启动socket
+#ifdef _WIN32
 	WORD ver = MAKEWORD(2, 2);
 	WSADATA dat;
 	WSAStartup(ver, &dat);
+#endif
 
 	// 1.建立socket
 	SOCKET _sock = socket(AF_INET, SOCK_STREAM, 0);
@@ -20,7 +22,11 @@ int main()
 	sockaddr_in _sin = {};
 	_sin.sin_family = AF_INET;
 	_sin.sin_port = htons(8888);
-	_sin.sin_addr.S_un.S_addr = inet_addr("127.0.0.1");
+#ifdef _WIN32
+	_sin.sin_addr.S_un.S_addr = inet_addr("192.168.1.221");
+#else
+	_sin.sin_addr.s_addr = inet_addr("192.168.1.221");
+#endif
 	int ret = connect(_sock, (sockaddr*)&_sin, sizeof(_sin));
 	if (INVALID_SOCKET == ret) {
 		std::cout << "connect error!" << std::endl;
@@ -28,6 +34,7 @@ int main()
 	else {
 		std::cout << "connect success!" << std::endl;
 	}
+	std::thread t_cmd(cin_cmd, _sock);
 	while (true)
 	{
 		fd_set fdRead;
@@ -50,13 +57,18 @@ int main()
 				break;
 			}
 		}
-		send_server(_sock);
-		Sleep(1000);
+		// send_server(_sock);
+		// Sleep(1000);
 	}
+	t_cmd.join();
 	// 4.关闭socket
+#ifdef _WIN32
 	closesocket(_sock);
-	// 清理socket
+	// windows清理socket
 	WSACleanup();
+#else
+	close(_sock);
+#endif
 	getchar();
 	return 0;
 }
@@ -90,8 +102,36 @@ int recv_server(SOCKET c_sock)
 	}
 	std::cout << "len:" << rsp.dataLen << std::endl;
 	std::cout << "cmd:" << rsp.cmd << std::endl;
-	std::cout << "len:" << rsp.ret << std::endl;
+	std::cout << "ret:" << rsp.ret << std::endl;
 	std::cout << "text:" << rsp.text << std::endl;
 
 	return 0;
+}
+
+void cin_cmd(SOCKET c_sock)
+{
+	int cmd;
+	while(true)
+	{
+		std::cin >> cmd;
+		if (cmd == -1) 
+		{
+			break;
+		}
+		switch (cmd)
+		{
+		case LOG_IN:
+			{
+				login request;
+				strcpy(request.user_name, "pengjiang");
+				strcpy(request.passwd, "123456");
+
+				send(c_sock, (char *)&request, sizeof(request), 0);
+			}
+			break;
+		default:
+			std::cout << "error cmd!" << std::endl;
+			break;
+		}
+	}
 }

@@ -1,5 +1,4 @@
-
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 2.8)
 project(esayClient)
 set(CMAKE_BUILD_TYPE "Debug") 
 #设定源码列表.cpp
@@ -14,7 +13,10 @@ include_directories(
 
 add_executable(client ${PROJECT_SOURCE_DIR}/src/client_main.cpp)
  
-target_link_libraries(client 
-        WS2_32
-        WSock32
-)
+if (WIN32)
+        target_link_libraries(client 
+                WS2_32
+                WSock32
+        )
+else (UNIX)
+endif ()
