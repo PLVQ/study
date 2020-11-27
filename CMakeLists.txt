@@ -18,12 +18,12 @@ if (WIN32)
         add_compile_options(-std=c++11)
 elseif (UNIX)
         set(INCLUDE_PATH
-                "D:/protobuf/include"         
+                "/home/admin/boost/include"
         )
         set(LIB_PATH
-                "/user"
+                "/home/admin/boost/lib"
         )
-        add_compile_options(-std=c++11 -Wall -pthread)
+        SET(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-std=c++11 -pthread")
  endif()
 
 #设定头文件路径

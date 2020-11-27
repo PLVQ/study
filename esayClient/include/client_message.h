@@ -6,8 +6,8 @@
 #include <string>
 #include <thread>
 #ifdef _WIN32
-    #include <Windows.h>
     #include <WinSock2.h>
+    #include <Windows.h>
 #else
     #include <unistd.h>
     #include <arpa/inet.h>

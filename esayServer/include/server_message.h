@@ -4,8 +4,18 @@
 #include <vector>
 #include <algorithm>
 #include <string>
-#include <Windows.h>
-#include <WinSock2.h>
+#ifdef _WIN32
+    #include <Windows.h>
+    #include <WinSock2.h>
+#else
+    #include <unistd.h>
+    #include <arpa/inet.h>
+    #include <string.h>
+
+    #define SOCKET int
+    #define INVALID_SOCKET	(SOCKET)(~0)
+    #define SOCKET_ERROR	(-1)
+#endif
 
 class dataHeader
 {

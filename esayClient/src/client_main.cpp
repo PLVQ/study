@@ -23,9 +23,9 @@ int main()
 	_sin.sin_family = AF_INET;
 	_sin.sin_port = htons(8888);
 #ifdef _WIN32
-	_sin.sin_addr.S_un.S_addr = inet_addr("192.168.1.221");
+	_sin.sin_addr.S_un.S_addr = inet_addr("192.168.1.84");
 #else
-	_sin.sin_addr.s_addr = inet_addr("192.168.1.221");
+	_sin.sin_addr.s_addr = inet_addr("127.0.0.1");
 #endif
 	int ret = connect(_sock, (sockaddr*)&_sin, sizeof(_sin));
 	if (INVALID_SOCKET == ret) {
