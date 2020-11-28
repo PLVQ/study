@@ -1,11 +1,11 @@
-// #define WIN32_LEAN_AND_MEAN
-// #define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <string>
 #include <thread>
 #ifdef _WIN32
+    #define _WINSOCK_DEPRECATED_NO_WARNINGS
+    #define WIN32_LEAN_AND_MEAN
     #include <WinSock2.h>
     #include <Windows.h>
 #else
@@ -24,10 +24,15 @@ public:
     int dataLen;
     int cmd;
 };
+
 enum CMD {
     LOG_IN,
-    LOG_OUT
+    LOG_IN_RESPONSE,
+    LOG_OUT,
+    LOG_OUT_RESPONSE,
+    NEW_USER_JOIN
 };
+
 class login : public dataHeader
 {
 public:
@@ -40,7 +45,51 @@ public:
     char passwd[32];
 };
 
-struct response : public dataHeader
+class loginResponse : public dataHeader
+{
+public:
+    loginResponse()
+    {
+        dataLen = sizeof(loginResponse);
+        cmd = LOG_IN_RESPONSE;
+    }
+    char user_name[32];
+};
+
+class logOut : public dataHeader
+{
+public:
+    logOut()
+    {
+        dataLen = sizeof(logOut);
+        cmd = LOG_OUT;
+    }
+    char user_name[32];
+};
+
+class logOutResponse : public dataHeader
+{
+public:
+    logOutResponse()
+    {
+        dataLen = sizeof(logOutResponse);
+        cmd = LOG_OUT_RESPONSE;
+    }
+    char user_name[32];
+};
+
+class newUserJoin : public dataHeader
+{
+public:
+    newUserJoin()
+    {
+        dataLen = sizeof(newUserJoin);
+        cmd = NEW_USER_JOIN;
+    }
+    int m_socket;
+};
+
+class response : public dataHeader
 {
 public:
     response()
@@ -52,7 +101,3 @@ public:
     int ret;
     char text[128];
 };
-
-int send_server(SOCKET c_sock);
-int recv_server(SOCKET c_sock);
-void cin_cmd(SOCKET c_sock);

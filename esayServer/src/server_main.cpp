@@ -88,6 +88,12 @@ int main()
 			}
 			else
 			{
+				newUserJoin rsp;
+				rsp.m_socket = (int)_cSock;
+				for(int i = g_clients.size() - 1; i >= 0; --i)
+				{
+					send(g_clients[i], (char*)&rsp, rsp.dataLen, 0);
+				}
 				g_clients.push_back(_cSock);
 				std::cout << "new client join!" << inet_ntoa(clientAddr.sin_addr) << std::endl;
 			}
@@ -142,40 +148,42 @@ int recv_client(SOCKET c_sock)
 	switch (head.cmd)
 	{
 	case LOG_IN:
+	{
+		login data;
+		nLen = recv(c_sock, (char *)&data + sizeof(head), sizeof(data) - sizeof(head), 0);
+		if (nLen <= 0)
 		{
-			login data;
-			nLen = recv(c_sock, (char *)&data + sizeof(head), sizeof(data) - sizeof(head), 0);
-			if (nLen <= 0)
-			{
-				std::cout << "client close" << std::endl;
-				break;
-			}
-			std::cout << "cmd:" << data.cmd << std::endl;
-			std::cout << "len:" << data.dataLen << std::endl;
-			std::cout << "user_name:" << data.user_name << std::endl;
-			std::cout << "passwd:" << data.passwd << std::endl;
-			response rsp;
-			strcpy(rsp.text, "login success!");
-			send(c_sock, (char *)&rsp, sizeof(rsp), 0);
+			std::cout << "client close" << std::endl;
+			break;
 		}
-		break;
+		std::cout << "cmd:" << data.cmd << std::endl;
+		std::cout << "len:" << data.dataLen << std::endl;
+		std::cout << "user_name:" << data.user_name << std::endl;
+		std::cout << "passwd:" << data.passwd << std::endl;
+		loginResponse rsp;
+		strcpy(rsp.user_name, data.user_name);
+		send(c_sock, (char *)&rsp, sizeof(rsp), 0);
+	}
+	break;
 	case LOG_OUT:
-		break;
+	{
+		logOut data;
+		nLen = recv(c_sock, (char *)&data + sizeof(head), sizeof(data) - sizeof(head), 0);
+		if (nLen <= 0)
+		{
+			std::cout << "client close" << std::endl;
+			break;
+		}
+		std::cout << "cmd:" << data.cmd << std::endl;
+		std::cout << "len:" << data.dataLen << std::endl;
+		std::cout << "user_name:" << data.user_name << std::endl;
+		logOutResponse rsp;
+		strcpy(rsp.user_name, data.user_name);
+		send(c_sock, (char *)&rsp, sizeof(rsp), 0);
+	}
+	break;
 	default:
 		break;
 	}
-	return 0;
-}
-
-int send_client(SOCKET c_sock)
-{
-	response rsp;
-	// strcpy(rsp.text, "hello client");
-	send(c_sock, (char*)&rsp, sizeof(rsp), 0);
-#ifdef _WIN32
-	Sleep(1000);
-#else
-	sleep(10);
-#endif
 	return 0;
 }
