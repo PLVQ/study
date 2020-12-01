@@ -3,10 +3,16 @@
 
 #include "client_message.h"
 
+#define RECV_MAX_SIZE 10240
+#define MSG_MAX_SIZE 40960
+
 class EasyTcpClient
 {
 private:
     SOCKET m_sock;
+    char m_szRecv[RECV_MAX_SIZE] = {};
+    char m_szMsg[MSG_MAX_SIZE] = {};
+    int m_lastPos = 0;
 public:
     EasyTcpClient();
     virtual ~EasyTcpClient();
@@ -141,21 +147,31 @@ bool EasyTcpClient::onRun()
 
 int EasyTcpClient::recvData()
 {
-    char szRecv[4096];
-	int nLen = recv(m_sock, szRecv, sizeof(dataHeader), 0);
+	int nLen = recv(m_sock, m_szRecv, RECV_MAX_SIZE, 0);
 	if (nLen <= 0)
 	{
 		std::cout << "client close" << std::endl;
 		return -1;
 	}
-    dataHeader *header = (dataHeader*)szRecv;
-	nLen = recv(m_sock, szRecv + sizeof(dataHeader), header->dataLen - sizeof(dataHeader), 0);
-	if (nLen <= 0)
-	{
-		std::cout << "client close" << std::endl;
-		return -1;
-	}
-    onNetMsg((dataHeader*)szRecv);
+
+    memcpy(m_szMsg, m_szRecv, nLen);
+    m_lastPos += nLen;
+    while (m_lastPos >= sizeof(dataHeader)){
+        dataHeader *header = (dataHeader*)m_szMsg;
+        std::cout << "addr:" << header << std::endl;
+        std::cout << "addr:" << (void*)&m_szMsg[0] << std::endl;
+        if (m_lastPos >= header->dataLen){
+            int leftLen = m_lastPos - header->dataLen; 
+            onNetMsg(header);
+            memcpy(m_szMsg, m_szMsg + header->dataLen, leftLen);
+            m_lastPos = leftLen;
+        }
+        else{
+            std::cout << "left data not a package!" << std::endl;
+            break;
+        }
+        
+    }
     return 0;
 }
 
@@ -166,9 +182,11 @@ int EasyTcpClient::onNetMsg(dataHeader *header)
     case LOG_IN_RESPONSE:
     {
         loginResponse *rsp = (loginResponse*)header;
-        std::cout << "recvMsg:" << std::endl;
-        std::cout << "msgLen:" << rsp->dataLen << std::endl;
-        std::cout << "content:" << rsp->user_name << std::endl;
+
+        std::cout << "recv data len:" << header->dataLen << std::endl;
+        // std::cout << "recvMsg:" << std::endl;
+        // std::cout << "msgLen:" << rsp->dataLen << std::endl;
+        // std::cout << "content:" << rsp->user_name << std::endl;
     }
     break;
     case LOG_OUT_RESPONSE:

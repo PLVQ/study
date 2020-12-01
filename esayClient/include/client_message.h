@@ -53,7 +53,7 @@ public:
         dataLen = sizeof(loginResponse);
         cmd = LOG_IN_RESPONSE;
     }
-    char user_name[32];
+    char user_name[1024];
 };
 
 class logOut : public dataHeader

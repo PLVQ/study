@@ -8,16 +8,20 @@ int main()
 		return 0;
 	}	
 
-	if(!client.Connect((char*)"127.0.0.1", 8888))
+	if(!client.Connect((char*)"192.168.1.84", 8888))
 	{
 		return 0;
 	}
-	std::thread t1(cin_cmd, &client);
+	// std::thread t1(cin_cmd, &client);
+	login request;
+	strcpy(request.user_name, "pengjiang");
+	strcpy(request.passwd, "123456");
 	while(client.isRun())
 	{
+		client.sendData(&request);
 		client.onRun();
 	}
-	t1.join();
+	// t1.join();
 	client.Close();
 	getchar();
 	return 0;

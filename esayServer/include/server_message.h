@@ -1,10 +1,10 @@
-#define WIN32_LEAN_AND_MEAN
-#define _WINSOCK_DEPRECATED_NO_WARNINGS
 #include <iostream>
 #include <vector>
 #include <algorithm>
 #include <string>
 #ifdef _WIN32
+#define WIN32_LEAN_AND_MEAN
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
     #include <Windows.h>
     #include <WinSock2.h>
 #else
@@ -52,7 +52,7 @@ public:
         dataLen = sizeof(loginResponse);
         cmd = LOG_IN_RESPONSE;
     }
-    char user_name[32];
+    char user_name[1024];
 };
 
 class logOut : public dataHeader
