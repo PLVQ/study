@@ -12,7 +12,6 @@ private:
     char m_szRecv[RECV_MAX_SIZE] = {};
     char m_szMsg[RECV_MAX_SIZE * 10] = {};
     int m_lastPos = 0;
-    int count = 0;
 
 public:
     EasyTcpClient();
@@ -133,10 +132,6 @@ bool EasyTcpClient::onRun()
         }
         if (FD_ISSET(m_sock, &fdRead))
         {
-            if (fdRead.fd_count > 1)
-            {
-                std::cout << fdRead.fd_count << std::endl;
-            }
             FD_CLR(m_sock, &fdRead);
             if (-1 == recvData())
             {
@@ -168,7 +163,6 @@ int EasyTcpClient::recvData()
             onNetMsg(header);
             memcpy(m_szMsg, m_szMsg + header->dataLen, leftLen);
             m_lastPos = leftLen;
-            count++;
         }
         else
         {
@@ -186,7 +180,7 @@ int EasyTcpClient::onNetMsg(dataHeader *header)
     {
         loginResponse *rsp = (loginResponse *)header;
 
-        std::cout << "recv data len:" << header->dataLen << std::endl;
+        // std::cout << "recv data len:" << header->dataLen << std::endl;
     }
     break;
     case LOG_OUT_RESPONSE:
@@ -215,7 +209,12 @@ int EasyTcpClient::sendData(dataHeader *header)
     {
         return send(m_sock, (char *)header, header->dataLen, 0);
     }
-    return 0;
+    else
+    {
+        std::cout << "socket close!" << std::endl;
+        m_sock = INVALID_SOCKET;
+        return 0;
+    }
 }
 
 #endif

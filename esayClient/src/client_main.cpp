@@ -31,7 +31,7 @@ int main()
 		for (int i = 0; i < cCount; ++i)
 		{
 			clients[i]->sendData(&request);
-			int ret = clients[i]->onRun();
+			// int ret = clients[i]->onRun();
 		}
 	}
 	for (int i = 0; i < cCount; ++i)

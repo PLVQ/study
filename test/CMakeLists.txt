@@ -1,5 +1,5 @@
 
-cmake_minimum_required(VERSION 3.9)
+cmake_minimum_required(VERSION 2.8)
 project(test)
 set(CMAKE_BUILD_TYPE "Debug") 
 #设定源码列表.cpp
