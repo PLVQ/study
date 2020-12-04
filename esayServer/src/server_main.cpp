@@ -3,16 +3,20 @@
 int main()
 {
 	EasyTcpServer server;
-	if(!server.initSocket()){
+	if (!server.initSocket())
+	{
 		return 0;
 	}
-	if(!server.Bind((char*)"127.0.0.1", 8888)){
+	if (!server.Bind((char *)"127.0.0.1", 8888))
+	{
 		return 0;
 	}
-	if(!server.Listen()){
+	if (!server.Listen())
+	{
 		return 0;
 	}
-	while(server.isRun()){
+	while (server.isRun())
+	{
 		server.onRun();
 	}
 	server.Close();

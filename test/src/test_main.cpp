@@ -1,23 +1,30 @@
 #include <iostream>
 #include <vector>
 #include <string>
+#include <chrono>
 
-class res
+using namespace std::chrono;
+
+void test_chrono()
 {
-    public:
-    std::string str;
-};
+   typedef std::chrono::duration<int> seconds_type;
+   typedef std::chrono::duration<int,std::milli> milliseconds_type;
+   typedef std::chrono::duration<int,std::ratio<60*60>> hours_type;
+  
+   hours_type h_oneday (24);                  // 24h
+   seconds_type s_oneday (60*60*24);          // 86400s
+   milliseconds_type ms_oneday (s_oneday);    // 86400000ms
+  
+   seconds_type s_onehour (60*60);            // 3600s
+ //hours_type h_onehour (s_onehour);          // NOT VALID (type truncates), use:
+   hours_type h_onehour (std::chrono::duration_cast<hours_type>(s_onehour));
+   milliseconds_type ms_onehour (s_onehour);  // 3600000ms (ok, no type truncation)
+  
+   std::cout << ms_onehour.count() << "ms in 1h" << std::endl;
+}
 
 int main()
 {
-    // std::string str;
-    // std::cout << sizeof(str) << std::endl; 
-    // std::string str1 = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
-    // std::cout << sizeof(str1) << std::endl; 
-    // std::string str2 = "a";
-    // std::cout << sizeof(str2) << std::endl; 
-    res r;
-    r.str = "hello";
-    std::cout<<r.str<<std::endl;
+    test_chrono();
     return 0;
 }

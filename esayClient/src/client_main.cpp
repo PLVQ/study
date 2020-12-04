@@ -2,27 +2,42 @@
 void cin_cmd(EasyTcpClient *client);
 int main()
 {
-	EasyTcpClient client;
-	if(!client.initSocket())
-	{
-		return 0;
-	}	
+	const int cCount = 10;
+	EasyTcpClient *clients[cCount];
 
-	if(!client.Connect((char*)"192.168.1.84", 8888))
+	for (int i = 0; i < cCount; ++i)
 	{
-		return 0;
+		clients[i] = new EasyTcpClient;
+		if (!clients[i]->initSocket())
+		{
+			return 0;
+		}
 	}
-	// std::thread t1(cin_cmd, &client);
+
+	for (int i = 0; i < cCount; ++i)
+	{
+		if (!clients[i]->Connect((char *)"127.0.0.1", 8888))
+		{
+			return 0;
+		}
+	}
+
 	login request;
 	strcpy(request.user_name, "pengjiang");
 	strcpy(request.passwd, "123456");
-	while(client.isRun())
+
+	while (true)
 	{
-		client.sendData(&request);
-		client.onRun();
+		for (int i = 0; i < cCount; ++i)
+		{
+			clients[i]->sendData(&request);
+			int ret = clients[i]->onRun();
+		}
 	}
-	// t1.join();
-	client.Close();
+	for (int i = 0; i < cCount; ++i)
+	{
+		clients[i]->Close();
+	}
 	getchar();
 	return 0;
 }
