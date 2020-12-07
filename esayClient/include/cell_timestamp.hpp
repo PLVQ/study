@@ -15,11 +15,16 @@ class cellTimeStamp {
     int64_t getElapsedSecondInMicroSec();
 };
 
-cellTimeStamp::cellTimeStamp() { m_begin = high_resolution_clock::now(); }
+cellTimeStamp::cellTimeStamp() {
+    m_begin = high_resolution_clock::now();
+}
 
-cellTimeStamp::~cellTimeStamp() {}
+cellTimeStamp::~cellTimeStamp() {
+}
 
-void cellTimeStamp::update() { m_begin = high_resolution_clock::now(); }
+void cellTimeStamp::update() {
+    m_begin = high_resolution_clock::now();
+}
 
 double cellTimeStamp::getElapsedSecond() {
     return getElapsedSecondInMilliSec() * 0.001;

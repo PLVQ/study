@@ -6,13 +6,13 @@
 
 #define RECV_MAX_SIZE 10240
 
-class ClientSocket
-{
-private:
+class ClientSocket {
+   private:
     SOCKET m_sockfd;
     char m_szMsg[RECV_MAX_SIZE * 10] = {};
     int m_lastPos = 0;
-public:
+
+   public:
     ClientSocket(SOCKET sock = INVALID_SOCKET);
     ~ClientSocket();
     SOCKET getSockfd() const;
@@ -22,8 +22,7 @@ public:
     void setLastPos(int pos);
 };
 
-ClientSocket::ClientSocket(SOCKET sock)
-{
+ClientSocket::ClientSocket(SOCKET sock) {
     m_sockfd = sock;
     memset(m_szMsg, 0, sizeof(m_szMsg));
 }
@@ -39,16 +38,15 @@ int ClientSocket::getLastPos() { return m_lastPos; }
 
 void ClientSocket::setLastPos(int pos) { m_lastPos = pos; }
 
-class EasyTcpServer
-{
-private:
+class EasyTcpServer {
+   private:
     SOCKET m_sock;
     char m_szRecv[RECV_MAX_SIZE];
     std::vector<ClientSocket *> m_clients;
     int count = 0;
     cellTimeStamp m_time;
 
-public:
+   public:
     EasyTcpServer();
     virtual ~EasyTcpServer();
     // 初始化socket
@@ -79,23 +77,20 @@ EasyTcpServer::EasyTcpServer() { m_sock = INVALID_SOCKET; }
 
 EasyTcpServer::~EasyTcpServer() { Close(); }
 
-bool EasyTcpServer::initSocket()
-{
+bool EasyTcpServer::initSocket() {
 #ifdef _WIN32
     // windows启动socket
     WORD ver = MAKEWORD(2, 2);
     WSADATA dat;
     WSAStartup(ver, &dat);
 #endif
-    if (m_sock != INVALID_SOCKET)
-    {
+    if (m_sock != INVALID_SOCKET) {
         std::cout << "close last connect socket:" << m_sock << std::endl;
         Close();
     }
     // 1.建立socket
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
-    if (m_sock == INVALID_SOCKET)
-    {
+    if (m_sock == INVALID_SOCKET) {
         std::cout << "create socket fail!" << std::endl;
         return false;
     }
@@ -103,18 +98,16 @@ bool EasyTcpServer::initSocket()
     return true;
 }
 
-bool EasyTcpServer::Bind(char *ip, short int port)
-{
+bool EasyTcpServer::Bind(char *ip, short int port) {
     sockaddr_in _sin = {};
     _sin.sin_family = AF_INET;
     _sin.sin_port = htons(8888);
 #ifdef _WIN32
-    _sin.sin_addr.S_un.S_addr = INADDR_ANY; // inet_addr("127.0.0.1");
+    _sin.sin_addr.S_un.S_addr = INADDR_ANY;  // inet_addr("127.0.0.1");
 #else
     _sin.sin_addr.s_addr = inet_addr("0.0.0.0");
 #endif
-    if (bind(m_sock, (sockaddr *)&_sin, sizeof(_sin)) == SOCKET_ERROR)
-    {
+    if (bind(m_sock, (sockaddr *)&_sin, sizeof(_sin)) == SOCKET_ERROR) {
         std::cout << "bind addr error!" << std::endl;
         return false;
     }
@@ -122,10 +115,8 @@ bool EasyTcpServer::Bind(char *ip, short int port)
     return true;
 }
 
-bool EasyTcpServer::Listen()
-{
-    if (SOCKET_ERROR == listen(m_sock, 5))
-    {
+bool EasyTcpServer::Listen() {
+    if (SOCKET_ERROR == listen(m_sock, 5)) {
         std::cout << "listen port error!" << std::endl;
         return false;
     }
@@ -133,8 +124,7 @@ bool EasyTcpServer::Listen()
     return true;
 }
 
-bool EasyTcpServer::Accept()
-{
+bool EasyTcpServer::Accept() {
     sockaddr_in clientAddr = {};
     int nAddrLen = sizeof(sockaddr_in);
     SOCKET sock = INVALID_SOCKET;
@@ -144,8 +134,7 @@ bool EasyTcpServer::Accept()
     sock = accept(m_sock, (sockaddr *)&clientAddr, (socklen_t *)&nAddrLen);
 #endif
 
-    if (sock == INVALID_SOCKET)
-    {
+    if (sock == INVALID_SOCKET) {
         std::cout << "accept error!" << std::endl;
         return false;
     }
@@ -154,14 +143,13 @@ bool EasyTcpServer::Accept()
     // sendDataAll(&rsp);
     m_clients.push_back(new ClientSocket(sock));
     std::cout << "new client sock<" << sock << "> join!"
-              << inet_ntoa(clientAddr.sin_addr) << "clients" << m_clients.size() << std::endl;
+              << inet_ntoa(clientAddr.sin_addr) << "clients" << m_clients.size()
+              << std::endl;
     return true;
 }
 
-void EasyTcpServer::Close()
-{
-    if (m_sock != INVALID_SOCKET)
-    {
+void EasyTcpServer::Close() {
+    if (m_sock != INVALID_SOCKET) {
         // 4.关闭socket
 #ifdef _WIN32
         closesocket(m_sock);
@@ -176,8 +164,7 @@ void EasyTcpServer::Close()
 
 bool EasyTcpServer::isRun() { return m_sock != INVALID_SOCKET; }
 
-bool EasyTcpServer::onRun()
-{
+bool EasyTcpServer::onRun() {
     fd_set fdRead;
     fd_set fdWrite;
     fd_set fdExp;
@@ -192,38 +179,31 @@ bool EasyTcpServer::onRun()
 
     SOCKET max_sock = m_sock;
 
-    for (int i = m_clients.size() - 1; i >= 0; --i)
-    {
+    for (int i = m_clients.size() - 1; i >= 0; --i) {
         FD_SET(m_clients[i]->getSockfd(), &fdRead);
-        if (max_sock < m_clients[i]->getSockfd())
-        {
+        if (max_sock < m_clients[i]->getSockfd()) {
             max_sock = m_clients[i]->getSockfd();
         }
     }
     timeval tTime = {0, 0};
     int ret = select(max_sock + 1, &fdRead, &fdWrite, &fdExp, &tTime);
-    if (ret < 0)
-    {
+    if (ret < 0) {
         std::cout << "select exit!" << std::endl;
         m_sock = INVALID_SOCKET;
         return false;
     }
 
-    if (FD_ISSET(m_sock, &fdRead))
-    {
+    if (FD_ISSET(m_sock, &fdRead)) {
         FD_CLR(m_sock, &fdRead);
         Accept();
     }
 
-    for (int i = m_clients.size() - 1; i >= 0; --i)
-    {
-        if (FD_ISSET(m_clients[i]->getSockfd(), &fdRead))
-        {
-            if (-1 == recvData(m_clients[i]))
-            {
-                auto iter = std::find(m_clients.begin(), m_clients.end(), m_clients[i]);
-                if (iter != m_clients.end())
-                {
+    for (int i = m_clients.size() - 1; i >= 0; --i) {
+        if (FD_ISSET(m_clients[i]->getSockfd(), &fdRead)) {
+            if (-1 == recvData(m_clients[i])) {
+                auto iter =
+                    std::find(m_clients.begin(), m_clients.end(), m_clients[i]);
+                if (iter != m_clients.end()) {
                     delete *iter;
                     m_clients.erase(iter);
                 }
@@ -233,29 +213,23 @@ bool EasyTcpServer::onRun()
     return true;
 }
 
-int EasyTcpServer::recvData(ClientSocket *client)
-{
+int EasyTcpServer::recvData(ClientSocket *client) {
     int nLen = recv(client->getSockfd(), m_szRecv, RECV_MAX_SIZE, 0);
-    if (nLen <= 0)
-    {
+    if (nLen <= 0) {
         std::cout << "client close" << std::endl;
         return -1;
     }
     memcpy(client->getSzMsg() + client->getLastPos(), m_szRecv, nLen);
     client->setLastPos(client->getLastPos() + nLen);
-    while (nLen >= sizeof(dataHeader))
-    {
+    while (nLen >= sizeof(dataHeader)) {
         dataHeader *header = (dataHeader *)client->getSzMsg();
-        if (client->getLastPos() >= header->dataLen)
-        {
+        if (client->getLastPos() >= header->dataLen) {
             int leftLen = client->getLastPos() - header->dataLen;
             onNetMsg(client->getSockfd(), header);
             memcpy(client->getSzMsg(), client->getSzMsg() + header->dataLen,
                    leftLen);
             client->setLastPos(leftLen);
-        }
-        else
-        {
+        } else {
             break;
         }
     }
@@ -263,54 +237,43 @@ int EasyTcpServer::recvData(ClientSocket *client)
     return 0;
 }
 
-int EasyTcpServer::onNetMsg(SOCKET sock, dataHeader *header)
-{
+int EasyTcpServer::onNetMsg(SOCKET sock, dataHeader *header) {
     count++;
-    if (m_time.getElapsedSecond() >= 1.0)
-    {
+    if (m_time.getElapsedSecond() >= 1.0) {
         std::cout << "time<" << m_time.getElapsedSecond() << "> recv sock<"
                   << sock << "> clients<" << m_clients.size()
                   << "> msg package<" << count << ">" << std::endl;
         m_time.update();
         count = 0;
     }
-    switch (header->cmd)
-    {
-    case LOG_IN:
-    {
-        // login *data = (login *)header;
-        // loginResponse rsp;
-        // strcpy(rsp.user_name, data->user_name);
-        // sendData(sock, &rsp);
-    }
-    break;
-    case LOG_OUT:
-    {
-        logOut *data = (logOut *)header;
-        logOutResponse rsp;
-        strcpy(rsp.user_name, data->user_name);
-        sendData(sock, &rsp);
-    }
-    break;
-    default:
-        break;
+    switch (header->cmd) {
+        case LOG_IN: {
+            login *data = (login *)header;
+            loginResponse rsp;
+            strcpy(rsp.user_name, data->user_name);
+            sendData(sock, &rsp);
+        } break;
+        case LOG_OUT: {
+            logOut *data = (logOut *)header;
+            logOutResponse rsp;
+            strcpy(rsp.user_name, data->user_name);
+            sendData(sock, &rsp);
+        } break;
+        default:
+            break;
     }
     return 0;
 }
 
-int EasyTcpServer::sendData(SOCKET sock, dataHeader *header)
-{
-    if (isRun() && header)
-    {
+int EasyTcpServer::sendData(SOCKET sock, dataHeader *header) {
+    if (isRun() && header) {
         return send(sock, (char *)header, header->dataLen, 0);
     }
     return 0;
 }
 
-void EasyTcpServer::sendDataAll(dataHeader *header)
-{
-    for (int i = m_clients.size() - 1; i >= 0; --i)
-    {
+void EasyTcpServer::sendDataAll(dataHeader *header) {
+    for (int i = m_clients.size() - 1; i >= 0; --i) {
         sendData(m_clients[i]->getSockfd(), header);
     }
 }
