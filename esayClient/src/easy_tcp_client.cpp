@@ -1,49 +1,8 @@
-#ifndef EASY_TCP_CLIENT_HPP
-#define EASY_TCP_CLIENT_HPP
+#include "easy_tcp_client.h"
 
-#include "client_message.h"
+EasyTcpClient::EasyTcpClient() { m_sock = INVALID_SOCKET; }
 
-#define RECV_MAX_SIZE 10240
-
-class EasyTcpClient
-{
-private:
-    SOCKET m_sock;
-    char m_szRecv[RECV_MAX_SIZE] = {};
-    char m_szMsg[RECV_MAX_SIZE * 10] = {};
-    int m_lastPos = 0;
-
-public:
-    EasyTcpClient();
-    virtual ~EasyTcpClient();
-
-    // 初始化socket
-    bool initSocket();
-    // 连接服务器
-    bool Connect(char *ip, short int port);
-    // 清理socket
-    void Close();
-    // 检测socket
-    bool isRun();
-    // 处理socket
-    bool onRun();
-    // 接收数据
-    int recvData();
-    // 处理消息
-    int onNetMsg(dataHeader *header);
-    // 发送数据
-    int sendData(dataHeader *header);
-};
-
-EasyTcpClient::EasyTcpClient()
-{
-    m_sock = INVALID_SOCKET;
-}
-
-EasyTcpClient::~EasyTcpClient()
-{
-    Close();
-}
+EasyTcpClient::~EasyTcpClient() { Close(); }
 
 bool EasyTcpClient::initSocket()
 {
@@ -55,17 +14,17 @@ bool EasyTcpClient::initSocket()
 #endif
     if (m_sock != INVALID_SOCKET)
     {
-        std::cout << "close last connect socket:" << m_sock << std::endl;
+        std::cout << "close last connect socket<" << m_sock << ">." << std::endl;
         Close();
     }
     // 1.建立socket
     m_sock = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+
     if (m_sock == INVALID_SOCKET)
     {
         std::cout << "create socket fail!" << std::endl;
         return false;
     }
-    std::cout << "create socket success!" << std::endl;
     return true;
 }
 
@@ -84,14 +43,15 @@ bool EasyTcpClient::Connect(char *ip, short int port)
     {
         initSocket();
     }
+
     int ret = connect(m_sock, (sockaddr *)&_sin, sizeof(_sin));
+
     if (INVALID_SOCKET == ret)
     {
-        std::cout << "connect fail!" << std::endl;
+        std::cout << "socket<" << m_sock << ">connect fail!" << std::endl;
         m_sock = INVALID_SOCKET;
-        return false;
     }
-    std::cout << "connect success!" << std::endl;
+
     return true;
 }
 
@@ -109,10 +69,7 @@ void EasyTcpClient::Close()
     m_sock = INVALID_SOCKET;
 }
 
-bool EasyTcpClient::isRun()
-{
-    return m_sock != INVALID_SOCKET;
-}
+bool EasyTcpClient::isRun() { return m_sock != INVALID_SOCKET; }
 
 bool EasyTcpClient::onRun()
 {
@@ -122,9 +79,9 @@ bool EasyTcpClient::onRun()
 
         FD_ZERO(&fdRead);
         FD_SET(m_sock, &fdRead);
-        timeval tTime = {0, 0};
-        int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, &tTime);
-        // int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, 0);
+        // timeval tTime = {0, 10};
+        // int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, &tTime);
+        int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, nullptr);
         if (ret < 0)
         {
             std::cout << "select exit!" << std::endl;
@@ -180,7 +137,7 @@ int EasyTcpClient::onNetMsg(dataHeader *header)
     {
         loginResponse *rsp = (loginResponse *)header;
 
-        std::cout << "recv data len:" << header->dataLen << std::endl;
+        // std::cout << "recv data len:" << header->dataLen << std::endl;
     }
     break;
     case LOG_OUT_RESPONSE:
@@ -207,9 +164,18 @@ int EasyTcpClient::sendData(dataHeader *header)
 {
     if (isRun())
     {
-        return send(m_sock, (char *)header, header->dataLen, 0);
+        int ret = send(m_sock, (char *)header, header->dataLen, 0);
+        if(ret == SOCKET_ERROR)
+        {
+            m_sock = INVALID_SOCKET;
+            return SOCKET_ERROR;
+        }
+        return ret;
     }
-    return 0;
+    else
+    {
+        std::cout << "socket close!" << std::endl;
+        m_sock = INVALID_SOCKET;
+        return 0;
+    }
 }
-
-#endif

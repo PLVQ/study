@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8)
 project(esayClient)
-set(CMAKE_BUILD_TYPE "Debug") 
+set(CMAKE_BUILD_TYPE "release") 
 #设定源码列表.cpp
 # set(SOURCE_FILES ./main.cpp)
 #设定所有源码列表 ：aux_source_directory(<dir> <variable>)
@@ -11,7 +11,9 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/include
 ) 
 
-add_executable(client ${PROJECT_SOURCE_DIR}/src/client_main.cpp)
+aux_source_directory(${PROJECT_SOURCE_DIR}/src SRC)
+
+add_executable(client ${SRC})
  
 if (WIN32)
         target_link_libraries(client 
