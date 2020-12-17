@@ -1,7 +1,13 @@
-#include "easy_tcp_server.hpp"
+#include "easy_tcp_server.h"
 
 int main()
 {
+#ifdef _WIN32
+	// windows启动socket
+	WORD ver = MAKEWORD(2, 2);
+	WSADATA dat;
+	WSAStartup(ver, &dat);
+#endif
 	EasyTcpServer server;
 	if (!server.initSocket())
 	{
@@ -15,12 +21,17 @@ int main()
 	{
 		return 0;
 	}
+	server.Start();
 	while (server.isRun())
 	{
 		server.onRun();
 	}
 	server.Close();
 	std::cout << "exit" << std::endl;
+#ifdef _WIN32
+	// windows关闭socket
+	WSACleanup();
+#endif
 	getchar();
 	return 0;
 }
