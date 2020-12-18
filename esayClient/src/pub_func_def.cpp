@@ -59,7 +59,7 @@ void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex)
             if (clients[i]->isRun())
             {
                 clients[i]->sendData(&request);
-                // clients[i]->onRun();
+                clients[i]->onRun();
             }
         }
     }

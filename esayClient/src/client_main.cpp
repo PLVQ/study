@@ -36,7 +36,7 @@ void oneThread()
 
 void multiThread()
 {
-    const int cCount = 1000;
+    const int cCount = 10000;
     EasyTcpClient *clients[cCount];
     int tCount = 4;
     cellTimeStamp tTime;
