@@ -26,8 +26,8 @@ public:
         dataLen = sizeof(login);
         cmd = LOG_IN;
     }
-    char user_name[16];
-    char passwd[16];
+    char user_name[32];
+    char passwd[32];
 };
 
 class loginResponse : public dataHeader

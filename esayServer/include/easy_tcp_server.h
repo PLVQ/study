@@ -42,12 +42,16 @@ class cellServer
 {
 private:
     SOCKET m_sock;
-    std::vector<ClientSocket*> m_clients;
+    std::map<SOCKET, ClientSocket*> m_clients;
     std::vector<ClientSocket*> m_clientBuff;
     char m_szRecv[RECV_MAX_SIZE];
     std::mutex m_mutex;
     std::thread *m_thread;
     ClientLeaveEvent *m_event;
+    fd_set m_fdReadBak;
+    bool m_clientsChange;
+    SOCKET m_maxSock;
+
 public:
     std::atomic_int m_recvCount;
 public:

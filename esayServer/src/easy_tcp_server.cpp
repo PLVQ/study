@@ -122,10 +122,8 @@ bool EasyTcpServer::Accept()
         std::cout << "accept error!" << std::endl;
         return false;
     }
+    // 将连接的客户端加入cellServer
     addClientToCellServer(new ClientSocket(sock));
-    // std::cout << "new client sock<" << sock << "> join!"
-    //           << inet_ntoa(clientAddr.sin_addr) << "clients" << m_joinCLients
-    //           << std::endl;
     return true;
 }
 
@@ -239,7 +237,7 @@ cellServer::~cellServer()
 
 void cellServer::Start()
 {
-    m_thread = new std::thread(std::mem_fun(&cellServer::onRun), this);
+    m_thread = new std::thread(std::mem_fn(&cellServer::onRun), this);
 }
 
 void cellServer::setEvent(ClientLeaveEvent *cEvent)
@@ -253,6 +251,10 @@ void cellServer::Close()
     {
         // 4.关闭socket
 #ifdef _WIN32
+        for (int n = (int)m_clients.size() - 1; n >= 0; n--)
+        {
+            closesocket(m_clients[n]->getSockfd());
+        }
         closesocket(m_sock);
 #else
         for (int n = (int)m_clients.size() - 1; n >= 0; n--)
@@ -269,6 +271,7 @@ bool cellServer::isRun() { return m_sock != INVALID_SOCKET; }
 
 void cellServer::onRun()
 {
+    m_clientsChange = true;
     while (isRun())
     {
         if (m_clientBuff.size() > 0)
@@ -276,9 +279,10 @@ void cellServer::onRun()
             std::lock_guard<std::mutex> lock(m_mutex);
             for (auto client : m_clientBuff)
             {
-                m_clients.push_back(client);
+                m_clients[client->getSockfd()] = client;
             }
             m_clientBuff.clear();
+            m_clientsChange = true;
         }
         if (m_clients.empty())
         {
@@ -289,19 +293,27 @@ void cellServer::onRun()
         fd_set fdRead;
 
         FD_ZERO(&fdRead);
-
-        SOCKET max_sock = m_sock;
-
-        for (int i = m_clients.size() - 1; i >= 0; --i)
+        if (m_clientsChange)
         {
-            FD_SET(m_clients[i]->getSockfd(), &fdRead);
-            if (max_sock < m_clients[i]->getSockfd())
+            m_maxSock = m_clients.begin()->second->getSockfd();
+
+            for (auto iter : m_clients)
             {
-                max_sock = m_clients[i]->getSockfd();
+                FD_SET(iter.second->getSockfd(), &fdRead);
+                if (m_maxSock < iter.second->getSockfd())
+                {
+                    m_maxSock = iter.second->getSockfd();
+                }
             }
+            memcpy(&m_fdReadBak, &fdRead, sizeof(fd_set));
+            m_clientsChange = false;
+        }
+        else
+        {
+            memcpy(&fdRead, &m_fdReadBak, sizeof(fd_set));
         }
         timeval tTime = {1, 0};
-        int ret = select(max_sock + 1, &fdRead, nullptr, nullptr, &tTime);
+        int ret = select(m_maxSock + 1, &fdRead, nullptr, nullptr, &tTime);
         // int ret = select(max_sock + 1, &fdRead, nullptr, nullptr, 0);
         if (ret < 0)
         {
@@ -309,24 +321,48 @@ void cellServer::onRun()
             m_sock = INVALID_SOCKET;
             return;
         }
-
-        for (int i = m_clients.size() - 1; i >= 0; --i)
+        else if (ret == 0)
         {
-            if (FD_ISSET(m_clients[i]->getSockfd(), &fdRead))
+            continue;
+        }
+#ifdef _WIN32
+        for (int n = 0; n < fdRead.fd_count; n++)
+        {
+            auto iter  = m_clients.find(fdRead.fd_array[n]);
+            if (iter != m_clients.end())
+            {
+                if (-1 == recvData(iter->second))
+                {
+                    m_event->clientLeave();
+                    m_clientsChange = true;
+                    m_clients.erase(iter->first);
+                }
+            }else {
+                printf("error. if (iter != _clients.end())\n");
+            }
+
+        }
+#else
+        std::vector<ClientSocket *> temp;
+        for (auto iter : m_clients)
+        {
+            if (FD_ISSET(iter.second->getSockfd(), &fdRead))
             {
                 // FD_CLR(m_clients[i]->getSockfd(), &fdRead);
-                if (-1 == recvData(m_clients[i]))
+                if (-1 == recvData(iter.second))
                 {
-                    auto iter = std::find(m_clients.begin(), m_clients.end(), m_clients[i]);
-                    if (iter != m_clients.end())
-                    {
-                        m_event->clientLeave();
-                        delete *iter;
-                        m_clients.erase(iter);
-                    }
+                    m_event->clientLeave();
+                    m_clientsChange = true;
+                    temp.push_back(iter.second);
                 }
             }
         }
+        for (auto pClient : temp)
+        {
+            m_clients.erase(pClient->getSockfd());
+            delete pClient;
+        }
+#endif
     }
 }
 
@@ -366,10 +402,10 @@ int cellServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
     {
     case LOG_IN:
     {
-        // login *data = (login *)header;
-        // loginResponse rsp;
-        // strcpy(rsp.user_name, data->user_name);
-        // pCLient->sendData(&rsp);
+        login *data = (login *)header;
+        loginResponse rsp;
+        strcpy(rsp.user_name, data->user_name);
+        pCLient->sendData(&rsp);
     }
     break;
     case LOG_OUT:

@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <map>
 #include <algorithm>
 #include <string>
 #include <chrono>
@@ -14,7 +15,7 @@
 #ifdef _WIN32
     #define WIN32_LEAN_AND_MEAN
     #define _WINSOCK_DEPRECATED_NO_WARNINGS
-    #define FD_SETSIZE 1024
+    #define FD_SETSIZE 2524
     #include <Windows.h>
     #include <WinSock2.h>
 #else
