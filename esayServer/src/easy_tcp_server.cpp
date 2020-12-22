@@ -3,8 +3,10 @@
 ClientSocket::ClientSocket(SOCKET sock)
 {
     m_sockfd = sock;
-    m_lastPos = 0;
-    memset(m_szMsg, 0, sizeof(m_szMsg));
+    m_lastRecvPos = 0;
+    m_lastSendPos = 0;
+    memset(m_szMsg, 0, RECV_BUFF_SIZE);
+    memset(m_szSendBuff, 0, SEND_BUFF_SIZE);
 }
 
 ClientSocket::~ClientSocket()
@@ -25,18 +27,38 @@ SOCKET ClientSocket::getSockfd() const { return m_sockfd; }
 
 char *ClientSocket::getSzMsg() { return m_szMsg; }
 
-int ClientSocket::getLastPos() { return m_lastPos; }
+int ClientSocket::getLastPos() { return m_lastRecvPos; }
 
-void ClientSocket::setLastPos(int pos) { m_lastPos = pos; }
+void ClientSocket::setLastPos(int pos) { m_lastRecvPos = pos; }
 
 int ClientSocket::sendData(dataHeader *header)
 {
-    if (header)
+    int ret = SOCKET_ERROR;
+    int nSendLen = header->dataLen;
+    const char* pSendData = (const char*) header; 
+    while (true)
     {
-        int ret = send(m_sockfd, (char *)header, header->dataLen, 0);
-        return ret;
+        if (m_lastSendPos + nSendLen >= SEND_BUFF_SIZE)
+        {
+            int nCopyLen = SEND_BUFF_SIZE - m_lastSendPos;
+            memcpy(m_szSendBuff + m_lastSendPos, pSendData, nCopyLen);
+            pSendData += nCopyLen;
+            nSendLen -= nCopyLen;
+            ret = send(m_sockfd, m_szSendBuff, SEND_BUFF_SIZE, 0);
+            m_lastSendPos = 0;
+            if (ret == SOCKET_ERROR)
+            {
+                return ret;
+            }
+        }
+        else
+        {
+            memcpy(m_szSendBuff + m_lastSendPos, pSendData, nSendLen);
+            m_lastSendPos += nSendLen;
+            break;
+        }
     }
-    return 0;
+    return ret;
 }
 
 EasyTcpServer::EasyTcpServer()
@@ -368,12 +390,14 @@ void cellServer::onRun()
 
 int cellServer::recvData(ClientSocket *pClient)
 {
-    int nLen = recv(pClient->getSockfd(), m_szRecv, RECV_MAX_SIZE, 0);
+    // 接收客户端数据
+    char *szRecv = pClient->getSzMsg() + pClient->getLastPos();
+    int nLen = recv(pClient->getSockfd(), szRecv, (RECV_BUFF_SIZE) - pClient->getLastPos(), 0);
     if (nLen <= 0)
     {
         return -1;
     }
-    memcpy(pClient->getSzMsg() + pClient->getLastPos(), m_szRecv, nLen);
+    // memcpy(pClient->getSzMsg() + pClient->getLastPos(), m_szRecv, nLen);
     pClient->setLastPos(pClient->getLastPos() + nLen);
     while (nLen >= sizeof(dataHeader))
     {

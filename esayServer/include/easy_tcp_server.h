@@ -4,15 +4,23 @@
 #include "server_message.h"
 #include "cell_timestamp.h"
 
-#define RECV_MAX_SIZE 10240
+#ifndef RECV_BUFF_SIZE
+
+#define RECV_BUFF_SIZE 10240 * 5
+#define SEND_BUFF_SIZE 10240 * 5
+
+#endif
+
 #define CELL_SERVER_COUNT 4
 
 class ClientSocket
 {
 private:
     SOCKET m_sockfd;
-    char m_szMsg[RECV_MAX_SIZE * 10];
-    int m_lastPos;
+    char m_szMsg[RECV_BUFF_SIZE];
+    char m_szSendBuff[SEND_BUFF_SIZE];
+    int m_lastRecvPos;
+    int m_lastSendPos;
 
 public:
     ClientSocket(SOCKET sock = INVALID_SOCKET);
@@ -44,7 +52,7 @@ private:
     SOCKET m_sock;
     std::map<SOCKET, ClientSocket*> m_clients;
     std::vector<ClientSocket*> m_clientBuff;
-    char m_szRecv[RECV_MAX_SIZE];
+    char m_szRecv[RECV_BUFF_SIZE];
     std::mutex m_mutex;
     std::thread *m_thread;
     ClientLeaveEvent *m_event;
@@ -82,7 +90,6 @@ class EasyTcpServer:public ClientLeaveEvent
 {
 private:
     SOCKET m_sock;
-    char m_szRecv[RECV_MAX_SIZE];
     std::vector<cellServer*> m_servers;
     cellTimeStamp m_time;
     std::atomic_int m_clientCount;
