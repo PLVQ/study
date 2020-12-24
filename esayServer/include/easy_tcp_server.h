@@ -42,7 +42,8 @@ public:
     virtual ~ClientLeaveEvent(){}
     virtual void clientJoin() = 0;
     virtual void clientLeave() = 0;
-    virtual void onNetMsg() = 0;
+    virtual void onNetMsg(ClientSocket *pCLient, dataHeader *header) = 0;
+    virtual void onNetRecv() = 0;
 private:
 };
 
@@ -76,7 +77,7 @@ public:
     // 接收数据
     int recvData(ClientSocket *pClient);
     // 处理消息
-    int onNetMsg(ClientSocket *pClient, dataHeader *header);
+    virtual void onNetMsg(ClientSocket *pClient, dataHeader *header);
     // 发送数据
     int sendData(SOCKET sock, dataHeader *header);
     // 广播
@@ -92,8 +93,10 @@ private:
     SOCKET m_sock;
     std::vector<cellServer*> m_servers;
     cellTimeStamp m_time;
+protected:
     std::atomic_int m_clientCount;
     std::atomic_int m_recvMsgCount;
+    std::atomic_int m_recvCount;
 public:
     EasyTcpServer();
     virtual ~EasyTcpServer();
@@ -119,7 +122,8 @@ public:
     //
     virtual void clientJoin();
     virtual void clientLeave();
-    virtual void onNetMsg();
+    virtual void onNetMsg(ClientSocket *pCLient, dataHeader *header);
+    virtual void onNetRecv();
 };
 
 #endif

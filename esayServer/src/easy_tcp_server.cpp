@@ -66,6 +66,7 @@ EasyTcpServer::EasyTcpServer()
     m_sock = INVALID_SOCKET;
     m_recvMsgCount = 0;
     m_clientCount = 0;
+    m_recvCount = 0;
 }
 
 EasyTcpServer::~EasyTcpServer() { Close(); }
@@ -219,10 +220,11 @@ void EasyTcpServer::time2Msg()
     if (m_time.getElapsedSecond() >= 1.0)
     {
 
-        std::cout << "time<" << m_time.getElapsedSecond() << ">, clients<" << m_clientCount
-                  << ">, msg package<" << m_recvMsgCount << ">" << std::endl;
+        std::cout << "thread<" << m_servers.size() << ">,time<" << m_time.getElapsedSecond() << ">,clients<" << m_clientCount
+                  << ">,recv<" << m_recvCount << ">,msg<" << m_recvMsgCount << ">" << std::endl;
         m_time.update();
         m_recvMsgCount = 0;
+        m_recvCount = 0;
     }
 }
 
@@ -236,9 +238,14 @@ void EasyTcpServer::clientLeave()
     m_clientCount--;
 }
 
-void EasyTcpServer::onNetMsg()
+void EasyTcpServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
 {
     m_recvMsgCount++;
+}
+
+void EasyTcpServer::onNetRecv()
+{
+    m_recvCount++;
 }
 
 cellServer::cellServer(SOCKET sock)
@@ -393,6 +400,7 @@ int cellServer::recvData(ClientSocket *pClient)
     // 接收客户端数据
     char *szRecv = pClient->getSzMsg() + pClient->getLastPos();
     int nLen = recv(pClient->getSockfd(), szRecv, (RECV_BUFF_SIZE) - pClient->getLastPos(), 0);
+    m_event->onNetRecv();
     if (nLen <= 0)
     {
         return -1;
@@ -419,31 +427,9 @@ int cellServer::recvData(ClientSocket *pClient)
     return 0;
 }
 
-int cellServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
+void cellServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
 {
-    m_event->onNetMsg();
-    switch (header->cmd)
-    {
-    case LOG_IN:
-    {
-        login *data = (login *)header;
-        loginResponse rsp;
-        strcpy(rsp.user_name, data->user_name);
-        pCLient->sendData(&rsp);
-    }
-    break;
-    case LOG_OUT:
-    {
-        logOut *data = (logOut *)header;
-        logOutResponse rsp;
-        strcpy(rsp.user_name, data->user_name);
-        pCLient->sendData(&rsp);
-    }
-    break;
-    default:
-        break;
-    }
-    return 0;
+    m_event->onNetMsg(pCLient, header);
 }
 
 void cellServer::sendDataAll(dataHeader *header)

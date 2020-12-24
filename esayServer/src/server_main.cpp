@@ -1,4 +1,4 @@
-#include "easy_tcp_server.h"
+#include "server.h"
 
 int main()
 {
@@ -8,7 +8,7 @@ int main()
 	WSADATA dat;
 	WSAStartup(ver, &dat);
 #endif
-	EasyTcpServer server;
+	Server server;
 	if (!server.initSocket())
 	{
 		return 0;
