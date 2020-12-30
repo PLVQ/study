@@ -3,6 +3,7 @@
 
 #include "server_message.h"
 #include "cell_timestamp.h"
+#include "cell_task.h"
 
 #ifndef RECV_BUFF_SIZE
 
@@ -35,6 +36,7 @@ public:
 };
 
 class EasyTcpServer;
+class cellServer;
 
 class ClientLeaveEvent
 {
@@ -42,9 +44,20 @@ public:
     virtual ~ClientLeaveEvent(){}
     virtual void clientJoin() = 0;
     virtual void clientLeave() = 0;
-    virtual void onNetMsg(ClientSocket *pCLient, dataHeader *header) = 0;
+    virtual void onNetMsg(cellServer* pCellServer, ClientSocket *pCLient, dataHeader *header) = 0;
     virtual void onNetRecv() = 0;
 private:
+};
+
+class CellSendMsg2ClientTask:public CellTask
+{
+private:
+    ClientSocket* m_pClient;
+    dataHeader* m_pHeader;
+public:
+    CellSendMsg2ClientTask(ClientSocket* pClient, dataHeader* pHeader);
+    virtual ~CellSendMsg2ClientTask();
+    virtual void doTask(); 
 };
 
 class cellServer
@@ -60,6 +73,7 @@ private:
     fd_set m_fdReadBak;
     bool m_clientsChange;
     SOCKET m_maxSock;
+    CellTaskServer m_taskServer;
 
 public:
     std::atomic_int m_recvCount;
@@ -84,7 +98,10 @@ public:
     void sendDataAll(dataHeader *header);
     // 客户端加入
     void joinClients(ClientSocket* pClient);
+    // 获取客户端数量
     int getClientCount();
+    // 添加发送任务
+    void addSendTask(ClientSocket* pClient, dataHeader* pHeader);
 };
 
 class EasyTcpServer:public ClientLeaveEvent
@@ -122,7 +139,7 @@ public:
     //
     virtual void clientJoin();
     virtual void clientLeave();
-    virtual void onNetMsg(ClientSocket *pCLient, dataHeader *header);
+    virtual void onNetMsg(cellServer* pCellServer, ClientSocket *pCLient, dataHeader *header);
     virtual void onNetRecv();
 };
 

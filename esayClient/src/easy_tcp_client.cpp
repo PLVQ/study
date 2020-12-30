@@ -79,9 +79,9 @@ bool EasyTcpClient::onRun()
 
         FD_ZERO(&fdRead);
         FD_SET(m_sock, &fdRead);
-        // timeval tTime = {0, 10};
-        // int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, &tTime);
-        int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, nullptr);
+        timeval tTime = {0, 0};
+        int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, &tTime);
+        // int ret = select(m_sock + 1, &fdRead, nullptr, nullptr, nullptr);
         if (ret < 0)
         {
             std::cout << "select exit!" << std::endl;

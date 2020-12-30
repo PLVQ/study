@@ -5,6 +5,6 @@
 // 输入命令
 void cin_cmd(EasyTcpClient *client);
 // 连接服务器,发送消息
-void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex);
+void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex, std::atomic_int &sendCount);
 
 #endif

@@ -11,7 +11,7 @@ public:
     ~Server();
     virtual void clientJoin();
     virtual void clientLeave();
-    virtual void onNetMsg(ClientSocket *pCLient, dataHeader *header);
+    virtual void onNetMsg(cellServer* pCellServer, ClientSocket *pCLient, dataHeader *header);
     virtual void onNetRecv();
 };
 

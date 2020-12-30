@@ -238,7 +238,7 @@ void EasyTcpServer::clientLeave()
     m_clientCount--;
 }
 
-void EasyTcpServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
+void EasyTcpServer::onNetMsg(cellServer* pCellServer, ClientSocket *pCLient, dataHeader *header)
 {
     m_recvMsgCount++;
 }
@@ -267,6 +267,7 @@ cellServer::~cellServer()
 void cellServer::Start()
 {
     m_thread = new std::thread(std::mem_fn(&cellServer::onRun), this);
+    m_taskServer.onStart();
 }
 
 void cellServer::setEvent(ClientLeaveEvent *cEvent)
@@ -429,7 +430,7 @@ int cellServer::recvData(ClientSocket *pClient)
 
 void cellServer::onNetMsg(ClientSocket *pCLient, dataHeader *header)
 {
-    m_event->onNetMsg(pCLient, header);
+    m_event->onNetMsg(this, pCLient, header);
 }
 
 void cellServer::sendDataAll(dataHeader *header)
@@ -449,4 +450,27 @@ void cellServer::joinClients(ClientSocket *pClient)
 int cellServer::getClientCount()
 {
     return m_clients.size() + m_clientBuff.size();
+}
+
+void cellServer::addSendTask(ClientSocket* pClient, dataHeader* pHeader)
+{
+    CellSendMsg2ClientTask* task = new CellSendMsg2ClientTask(pClient, pHeader);
+    m_taskServer.addTask(task);
+}
+
+CellSendMsg2ClientTask::CellSendMsg2ClientTask(ClientSocket* pClient, dataHeader* pHeader)
+{
+    m_pClient = pClient;
+    m_pHeader = pHeader;
+}
+
+CellSendMsg2ClientTask::~CellSendMsg2ClientTask()
+{
+
+}
+
+void CellSendMsg2ClientTask::doTask()
+{
+    m_pClient->sendData(m_pHeader);
+    delete m_pHeader;
 }

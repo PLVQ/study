@@ -25,7 +25,7 @@ void oneThread()
         for (int i = 0; i < cCount; ++i)
         {
             clients[i]->sendData(&request);
-            // int ret = clients[i]->onRun();
+            int ret = clients[i]->onRun();
         }
     }
     for (int i = 0; i < cCount; ++i)
@@ -36,7 +36,8 @@ void oneThread()
 
 void multiThread()
 {
-    const int cCount = 10000;
+    const int cCount = 1000;
+    std::atomic_int sendCount = {0};
     EasyTcpClient *clients[cCount];
     int tCount = 4;
     cellTimeStamp tTime;
@@ -47,12 +48,20 @@ void multiThread()
         int begin = i * avg;
         int end = (i + 1) * avg;
         nThread[i] = new std::thread([&, begin, end, i]() {
-            sendMsg(clients, begin, end, i + 1);
+            sendMsg(clients, begin, end, i + 1, sendCount);
         });
         nThread[i]->detach();
     }
     while (true)
     {
+        auto t = tTime.getElapsedSecond();
+		if (t >= 1.0)
+		{
+			printf("thread<%d>,clients<%d>,time<%lf>,send<%d>\n",tCount, cCount,t,(int)(sendCount/ t));
+			sendCount = 0;
+			tTime.update();
+		}
+		Sleep(1);
     }
     for (int i = 0; i < 4; ++i)
     {

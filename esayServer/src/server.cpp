@@ -18,7 +18,7 @@ void Server::clientLeave()
     m_clientCount--;
 }
 
-void Server::onNetMsg(ClientSocket *pCLient, dataHeader *header)
+void Server::onNetMsg(cellServer* pCellServer, ClientSocket *pCLient, dataHeader *header)
 {
     m_recvMsgCount++;
     switch (header->cmd)
@@ -26,9 +26,9 @@ void Server::onNetMsg(ClientSocket *pCLient, dataHeader *header)
     case LOG_IN:
     {
         login *data = (login *)header;
-        loginResponse rsp;
-        strcpy(rsp.user_name, data->user_name);
-        pCLient->sendData(&rsp);
+        loginResponse *rsp = new loginResponse();
+        strcpy(rsp->user_name, data->user_name);
+        pCellServer->addSendTask(pCLient, rsp);
     }
     break;
     case LOG_OUT:

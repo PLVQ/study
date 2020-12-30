@@ -36,7 +36,7 @@ void cin_cmd(EasyTcpClient *client)
     }
 }
 
-void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex)
+void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex, std::atomic_int &sendCount)
 {
     std::cout << "thread<" << tIndex << "> start." << std::endl;
     for (int i = begin; i < end; ++i)
@@ -59,6 +59,7 @@ void sendMsg(EasyTcpClient *clients[], int begin, int end, int tIndex)
             if (clients[i]->isRun())
             {
                 clients[i]->sendData(&request);
+                sendCount++;
                 clients[i]->onRun();
             }
         }

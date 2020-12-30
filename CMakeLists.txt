@@ -37,4 +37,5 @@ link_directories(${LIB_PATH})
 #在父目录中可以直接引用子目录生成的库
 add_subdirectory(esayClient)
 add_subdirectory(esayServer)
+add_subdirectory(memoryPool)
 add_subdirectory(test)
