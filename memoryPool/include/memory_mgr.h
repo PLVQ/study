@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stdlib.h>
 #include <assert.h>
+#include <thread>
 #include <new>
 #include <mutex>
 
@@ -29,6 +30,7 @@ protected:
     size_t m_nBlockSize;
     char* m_pBuf;
     MemoryBlock* m_pHeader;
+    std::mutex m_mutex;
 
 public:
     MemoryPool();
@@ -59,7 +61,7 @@ public:
 class MemoryMgr
 {
 private:
-    InitMemoryPool<64, 10> m_memPool64;
+    InitMemoryPool<64, 100005> m_memPool64;
     InitMemoryPool<128, 10> m_memPool128;
     InitMemoryPool<256, 10> m_memPool256;
     InitMemoryPool<512, 10> m_memPool512;
