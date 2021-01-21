@@ -61,8 +61,12 @@ public:
 class MemoryMgr
 {
 private:
-    InitMemoryPool<64, 1000000> m_memPool64;
-    MemoryPool* m_szPool64[64 + 1];
+    InitMemoryPool<64, 100005> m_memPool64;
+    InitMemoryPool<128, 10> m_memPool128;
+    InitMemoryPool<256, 10> m_memPool256;
+    InitMemoryPool<512, 10> m_memPool512;
+    InitMemoryPool<1024, 10> m_memPool1024;
+    MemoryPool* m_szPool64[1024 + 1];
 
 private:
     MemoryMgr();

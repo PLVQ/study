@@ -2,9 +2,8 @@
 
 void oneThread()
 {
-    const int cCount = 1000;
+    const int cCount = 1;
     EasyTcpClient *clients[cCount];
-    cellTimeStamp tTime;
     for (int i = 0; i < cCount; ++i)
     {
         clients[i] = new EasyTcpClient;
@@ -13,18 +12,20 @@ void oneThread()
             return;
         }
     }
-    std::cout << "connect consume time:" << tTime.getElapsedSecondInMilliSec() << std::endl;
-    std::chrono::milliseconds tMilli(1000);
-    std::this_thread::sleep_for(tMilli);
     login request;
     strcpy(request.user_name, "pengjiang");
     strcpy(request.passwd, "123456");
 
+    cellTimeStamp tTime;
     while (true)
     {
         for (int i = 0; i < cCount; ++i)
         {
-            clients[i]->sendData(&request);
+            if (tTime.getElapsedSecond() >= 1.0)
+            {
+                clients[i]->sendData(&request);
+                tTime.update();
+            }
             int ret = clients[i]->onRun();
         }
     }
@@ -71,8 +72,8 @@ void multiThread()
 
 int main()
 {
-    // oneThread();
-    multiThread();
+    oneThread();
+    // multiThread();
     getchar();
     return 0;
 }

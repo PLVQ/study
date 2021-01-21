@@ -1,4 +1,5 @@
 #include "easy_tcp_server.h"
+#include "alloctor.h"
 
 ClientSocket::ClientSocket(SOCKET sock)
 {
