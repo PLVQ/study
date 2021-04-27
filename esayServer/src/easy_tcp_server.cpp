@@ -76,7 +76,8 @@ void EasyTcpServer::Start()
 {
     for (int i = 0; i < CELL_SERVER_COUNT; i++)
     {
-        auto server = new cellServer(m_sock);
+        // auto server = new cellServer(m_sock);
+        std::shared_ptr<cellServer> server = std::make_shared<cellServer>(m_sock);
         m_servers.push_back(server);
         server->Start();
         server->setEvent(this);
@@ -147,6 +148,7 @@ bool EasyTcpServer::Accept()
         return false;
     }
     // 将连接的客户端加入cellServer
+    // std::make_shared<ClientSocket>(sock)
     addClientToCellServer(new ClientSocket(sock));
     return true;
 }

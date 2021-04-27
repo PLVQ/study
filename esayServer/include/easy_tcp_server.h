@@ -104,11 +104,13 @@ public:
     void addSendTask(ClientSocket* pClient, dataHeader* pHeader);
 };
 
+typedef std::shared_ptr<cellServer> cellServerPtr;
+
 class EasyTcpServer:public ClientLeaveEvent
 {
 private:
     SOCKET m_sock;
-    std::vector<cellServer*> m_servers;
+    std::vector<cellServerPtr> m_servers;
     cellTimeStamp m_time;
 protected:
     std::atomic_int m_clientCount;

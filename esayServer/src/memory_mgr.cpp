@@ -152,6 +152,7 @@ void *MemoryMgr::alloctMem(std::size_t nSize)
 void MemoryMgr::freeMem(void *pMem)
 {
     MemoryBlock *pBlock = (MemoryBlock *)((char *)pMem - sizeof(MemoryBlock));
+    std::cout << "alloctMem<" << pBlock << "> id = " << pBlock->nId << std::endl;
     if (pBlock->bPool)
     {
         pBlock->pPool->freeMem(pMem);

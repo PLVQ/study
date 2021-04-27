@@ -17,14 +17,16 @@ void oneThread()
     strcpy(request.passwd, "123456");
 
     cellTimeStamp tTime;
+    bool sendFlag = true;
     while (true)
     {
         for (int i = 0; i < cCount; ++i)
         {
-            if (tTime.getElapsedSecond() >= 1.0)
+            if (sendFlag)
             {
                 clients[i]->sendData(&request);
                 tTime.update();
+                sendFlag = false;
             }
             int ret = clients[i]->onRun();
         }
