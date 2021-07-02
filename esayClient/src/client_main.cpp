@@ -42,7 +42,7 @@ void multiThread()
     const int cCount = 1000;
     std::atomic_int sendCount = {0};
     EasyTcpClient *clients[cCount];
-    int tCount = 4;
+    const int tCount = 4;
     cellTimeStamp tTime;
     std::thread *nThread[tCount];
     for (int i = 0; i < 4; ++i)
@@ -74,8 +74,8 @@ void multiThread()
 
 int main()
 {
-    oneThread();
-    // multiThread();
+    //oneThread();
+     multiThread();
     getchar();
     return 0;
 }
